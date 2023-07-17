@@ -7,7 +7,8 @@ services:
     image: linweiyuan/arkose-token-provider
     environment:
       - TZ=Asia/Shanghai
-      - BX=
       - INTERVAL=3
+      - PROXY=
+      - BX=
     restart: unless-stopped
 ```
