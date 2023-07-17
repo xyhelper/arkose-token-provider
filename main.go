@@ -58,13 +58,13 @@ func main() {
 	totalSubmitted := 0
 	for {
 		token, err := funcaptcha.GetOpenAITokenWithBx(bx)
-		if !strings.Contains(token, "sup=1") {
-			logger.Warn("BX is expired.")
+		if err != nil {
+			logger.Error("Failed to get arkose token, please try again later.")
 			return
 		}
 
-		if err != nil {
-			logger.Error("Failed to get arkose token.")
+		if !strings.Contains(token, "sup=1") {
+			logger.Warn("BX is expired.")
 			return
 		}
 
