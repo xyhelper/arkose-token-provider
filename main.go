@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/linweiyuan/funcaptcha"
 	"github.com/linweiyuan/go-logger/logger"
 
@@ -41,7 +43,10 @@ type Payload struct {
 
 //goland:noinspection GoUnhandledErrorResult
 func main() {
-	bx := os.Getenv("BX")
+	ctx := gctx.New()
+	// bx := os.Getenv("BX")
+	bx := g.Cfg().MustGetWithEnv(ctx, "BX").String()
+
 	if bx == "" {
 		logger.Error("Please set BX.")
 		return
@@ -57,15 +62,19 @@ func main() {
 
 	totalSubmitted := 0
 	for {
+		sleepTime, _ := strconv.Atoi(interval)
+		time.Sleep(time.Second * time.Duration(sleepTime))
+
 		token, err := funcaptcha.GetOpenAITokenWithBx(bx)
 		if err != nil {
 			logger.Error("Failed to get arkose token, please try again later.")
-			return
+			continue
+
 		}
 
 		if !strings.Contains(token, "sup=1") {
 			logger.Warn("BX is expired.")
-			return
+			continue
 		}
 
 		date := time.Now().Format("2006-01-02 15:04:05")
@@ -75,14 +84,12 @@ func main() {
 		}
 		if err := submitXyHelperToken(payload); err != nil {
 			logger.Info(err.Error())
-			return
+			continue
 		}
 
 		totalSubmitted++
 		logger.Info(fmt.Sprintf("Token is submitted at %s (%d).", date, totalSubmitted))
 
-		sleepTime, _ := strconv.Atoi(interval)
-		time.Sleep(time.Second * time.Duration(sleepTime))
 	}
 }
 
